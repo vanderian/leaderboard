@@ -38,9 +38,9 @@ namespace Grains.Tests.Hosted
                 leaderBoard.AddPlayerScore(p5.Item2, p5.Item1)
             );
 
-            var rank = await leaderBoard.GetRank(p3.Item2);
+            var rank = await leaderBoard.GetPlayerScore(p3.Item2);
 
-            Assert.Equal(3, 3);
+            Assert.Equal(3, rank.Rank);
         }
     }
 }

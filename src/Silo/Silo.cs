@@ -39,6 +39,7 @@ namespace Silo
         {
             // define the cluster configuration
             var builder = new SiloHostBuilder()
+                .UseDashboard()
                 .UseLocalhostClustering()
                 .AddMemoryGrainStorageAsDefault()
                 .Configure<ClusterOptions>(options =>

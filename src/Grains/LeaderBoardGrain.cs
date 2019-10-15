@@ -19,12 +19,13 @@ namespace Grains
             _logger = logger;
         }
 
-        public Task<int> GetRank(IPlayer player)
+        public Task<LeaderBoardRank> GetPlayerScore(IPlayer player)
         {
-            return Task.FromResult(PlayerIndex(player));
+            var idx = PlayerIndex(player);
+            return Task.FromResult(new LeaderBoardRank(_entries[idx].Score, idx + 1));
         }
 
-        public async Task AddPlayerScore(IPlayer player, int score)
+        public async Task<LeaderBoardRank> AddPlayerScore(IPlayer player, int score)
         {
             var idxPlayer = PlayerIndex(player);
             var idxInsert = Math.Max(0, _entries.FindIndex(e => e.Score < score));
@@ -42,6 +43,8 @@ namespace Grains
                 _entries.Insert(idxInsert, new LeaderBoardEntry(player.GetPrimaryKey(), info, score));
                 _logger.LogInformation("Update score: {score} for player {info.Name}");
             }
+
+            return new LeaderBoardRank(score, idxInsert + 1);
         }
 
         public Task<LeaderBoardPage> GetEntries(int offset, int count)
