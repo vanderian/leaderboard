@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option csharp_namespace = "Api";
 
-package LeaderBoard;
+package api;
 
 service LeaderBoard {
     rpc AddScore (PlayerScore) returns (PlayerRank);

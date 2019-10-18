@@ -16,7 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Protobuf Include="Protos\LeaderBoard.proto" />
+        <Protobuf Include="Protos\leader_board.proto" />
     </ItemGroup>
 
 </Project>

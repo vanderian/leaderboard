@@ -1,0 +1,11 @@
+type: google.api.Service
+config_version: 3
+
+http:
+  rules:
+    - selector: api.LeaderBoard.AddScore
+      post: /v1/leaderboard/add
+      body: "*"
+
+    - selector: api.LeaderBoard.GetRank
+      get: /v1/leaderboard/{id}
