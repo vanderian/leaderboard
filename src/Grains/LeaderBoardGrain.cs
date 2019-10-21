@@ -23,8 +23,10 @@ namespace Grains
         public async Task<LeaderBoardRank> GetPlayerScore(IPlayer player)
         {
             var idx = PlayerIndex(player);
+            if (idx != -1) return new LeaderBoardRank(_entries[idx].Score, idx + 1, _entries[idx].PlayerInfo, _entries[idx].PlayerId);
+
             var info = await player.GetPlayerInfo();
-            return new LeaderBoardRank(_entries[idx].Score, idx + 1, _entries[idx].PlayerInfo, _entries[idx].PlayerId);
+            return new LeaderBoardRank(0, _entries.Count + 1, info, player.GetPrimaryKey());
         }
 
         public async Task<LeaderBoardRank> AddPlayerScore(IPlayer player, int score)
