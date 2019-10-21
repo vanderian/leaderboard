@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+option csharp_namespace = "Api";
+
+import "google/protobuf/empty.proto";
+
+package api;
+
+service PongApiService {
+    rpc AddScore (NewScore) returns (PlayerScore);
+    rpc GetScore (PlayerId) returns (PlayerScore);
+    rpc Login (google.protobuf.Empty) returns (PlayerId);
+    rpc GetScores (google.protobuf.Empty) returns (PlayerScores);
+    rpc SetName (NewPlayerName) returns (google.protobuf.Empty);
+}
+
+message PlayerId {
+    string id = 1;
+}
+
+message NewPlayerName {
+    string id = 1;
+    string name = 2;
+}
+
+message NewScore {
+    string id = 1;
+    int32 score = 2;
+}
+
+message PlayerScore {
+    int32 score = 1;
+    int32 rank = 2;
+    string name = 3;
+    string id = 4;
+}
+
+message PlayerScores {
+    repeated PlayerScore scores = 1;
+}
+
+

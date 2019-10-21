@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Grains.Interfaces.Models;
 
 namespace Api
@@ -10,9 +11,19 @@ namespace Api
             return System.Guid.Parse(id);
         }
 
-        public static PlayerRank toPlayerRank(this LeaderBoardRank rank)
+        public static PlayerId ToPlayerId(this Guid id)
         {
-            return new PlayerRank() {Rank = rank.Score, Score = rank.Score};
+            return new PlayerId() {Id = id.ToString()};
+        }
+
+        public static PlayerScore ToPlayerScore(this LeaderBoardRank rank)
+        {
+            return new PlayerScore() {Rank = rank.Rank, Score = rank.Score, Name = rank.PlayerInfo.Name, Id = rank.PlayerId.ToString()};
+        }
+
+        public static PlayerScores ToPlayerScores(this LeaderBoardPage page)
+        {
+            return new PlayerScores() {Scores = {page.Ranks.Select(r => r.ToPlayerScore())}};
         }
     }
 }

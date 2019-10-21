@@ -22,7 +22,7 @@ namespace Api
 
             app.UseRouting();
 
-            app.UseEndpoints(endpoints => { endpoints.MapGrpcService<LeaderBoardService>(); });
+            app.UseEndpoints(endpoints => { endpoints.MapGrpcService<Services.PongApiService>(); });
         }
     }
 }

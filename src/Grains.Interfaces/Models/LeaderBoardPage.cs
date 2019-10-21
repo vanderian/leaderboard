@@ -4,15 +4,15 @@ namespace Grains.Interfaces.Models
 {
     public class LeaderBoardPage
     {
-        public LeaderBoardPage(int total, int offset, List<LeaderBoardEntry> entries)
+        public LeaderBoardPage(int total, int offset, List<LeaderBoardRank> ranks)
         {
             Total = total;
             Offset = offset;
-            Entries = entries;
+            Ranks = ranks;
         }
 
         public int Total { get; set; }
         public int Offset { get; set; }
-        public List<LeaderBoardEntry> Entries { get; set; }
+        public List<LeaderBoardRank> Ranks { get; set; }
     }
 }

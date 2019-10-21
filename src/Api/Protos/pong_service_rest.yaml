@@ -3,9 +3,9 @@ config_version: 3
 
 http:
   rules:
-    - selector: api.LeaderBoard.AddScore
+    - selector: api.PongApiService.AddScore
       post: /v1/leaderboard/add
       body: "*"
 
-    - selector: api.LeaderBoard.GetRank
+    - selector: api.PongApiService.GetScore
       get: /v1/leaderboard/{id}

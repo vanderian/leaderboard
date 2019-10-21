@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Grains.Interfaces;
 using Grains.Interfaces.Models;
@@ -19,43 +20,61 @@ namespace Grains
             _logger = logger;
         }
 
-        public Task<LeaderBoardRank> GetPlayerScore(IPlayer player)
+        public async Task<LeaderBoardRank> GetPlayerScore(IPlayer player)
         {
             var idx = PlayerIndex(player);
-            return Task.FromResult(new LeaderBoardRank(_entries[idx].Score, idx + 1));
+            var info = await player.GetPlayerInfo();
+            return new LeaderBoardRank(_entries[idx].Score, idx + 1, _entries[idx].PlayerInfo, _entries[idx].PlayerId);
         }
 
         public async Task<LeaderBoardRank> AddPlayerScore(IPlayer player, int score)
         {
+            LeaderBoardRank rank;
             var idxPlayer = PlayerIndex(player);
-            var idxInsert = Math.Max(0, _entries.FindIndex(e => e.Score < score));
+            var idxInsert = ScoreIndex(score);
             if (idxPlayer < 0)
             {
                 var info = await player.GetPlayerInfo();
                 _entries.Insert(idxInsert, new LeaderBoardEntry(player.GetPrimaryKey(), info, score));
-                _logger.LogInformation("Adding new score: {score} for player {info.Name}");
+                rank = new LeaderBoardRank(score, idxInsert + 1, info, player.GetPrimaryKey());
+                _logger.LogInformation($"Adding new score to {idxInsert}: {score} for player {info.Name}");
             }
 //            update score if higher
             else if (_entries[idxPlayer].Score <= score)
             {
-                var info = _entries[idxPlayer].PlayerInfo;
+                var e = _entries[idxPlayer];
                 _entries.RemoveAt(idxPlayer);
-                _entries.Insert(idxInsert, new LeaderBoardEntry(player.GetPrimaryKey(), info, score));
+                _entries.Insert(idxInsert, new LeaderBoardEntry(player.GetPrimaryKey(), e.PlayerInfo, score));
+                rank = new LeaderBoardRank(score, idxInsert + 1, e.PlayerInfo, e.PlayerId);
                 _logger.LogInformation("Update score: {score} for player {info.Name}");
             }
+            else
+            {
+                var e = _entries[idxPlayer];
+                rank = new LeaderBoardRank(e.Score, idxPlayer + 1, e.PlayerInfo, e.PlayerId);
+            }
 
-            return new LeaderBoardRank(score, idxInsert + 1);
+            return rank;
         }
 
         public Task<LeaderBoardPage> GetEntries(int offset, int count)
         {
-            var range = _entries.GetRange(offset, count);
+            var c = Math.Min(count, _entries.Count);
+            var range = _entries.GetRange(offset, c)
+                .Select((e, idx) => new LeaderBoardRank(e.Score, idx + 1, e.PlayerInfo, e.PlayerId))
+                .ToList();
             return Task.FromResult(new LeaderBoardPage(_entries.Count, offset, range));
         }
 
         private int PlayerIndex(IPlayer player)
         {
             return _entries.FindIndex(x => x.PlayerId == player.GetPrimaryKey());
+        }
+
+        private int ScoreIndex(int score)
+        {
+            var i = _entries.FindIndex(e => e.Score < score);
+            return i < 0 ? _entries.Count : i;
         }
     }
 }
