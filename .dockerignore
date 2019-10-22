@@ -1,0 +1,11 @@
+# directories
+**/bin/
+**/obj/
+**/out/
+
+# files
+**/*.trx
+**/*.md
+**/*.ps1
+**/*.cmd
+**/*.sh

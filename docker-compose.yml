@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  api:
+    image: api
+    depends_on:
+      - silo
+    build:
+      context: .
+      dockerfile: src/Api/Dockerfile
+  silo:
+    image: silo
+    build:
+      context: .
+      dockerfile: src/Silo/Dockerfile

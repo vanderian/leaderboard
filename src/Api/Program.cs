@@ -1,7 +1,6 @@
 using System;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Api
 {
@@ -11,15 +10,12 @@ namespace Api
 
         public static void Main(string[] args)
         {
-            var client = Client.ConnectClient().Result;
-
-            CreateHostBuilder(args)
-                .ConfigureServices(collection => collection.AddSingleton(client))
-                .Build().Run();
+            CreateHost(args).Run();
         }
 
-        private static IWebHostBuilder CreateHostBuilder(string[] args) =>
+        private static IWebHost CreateHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+                .UseStartup<Startup>()
+                .Build();
     }
 }
