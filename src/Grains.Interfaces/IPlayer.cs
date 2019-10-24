@@ -4,7 +4,7 @@ using Orleans;
 
 namespace Grains.Interfaces
 {
-    public interface IPlayer : IGrainWithGuidKey
+    public interface IPlayer : IGrainWithGuidKey, IGrainMarker
     {
         Task SetPlayerInfo(PlayerInfo info);
         Task<PlayerInfo> GetPlayerInfo();

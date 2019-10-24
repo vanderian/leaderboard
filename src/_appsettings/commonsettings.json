@@ -1,0 +1,7 @@
+{
+  "OrleansConfig": {
+    "Foo": "Bar",
+    "Bar": "Foo"
+  },
+  "Some": "Other"
+}

@@ -3,12 +3,14 @@ version: '3'
 services:
   api:
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=local
       - ASPNETCORE_URLS=http://+:5000
     network_mode: host
 #    ports:
 #      - "5000:5000"
   silo:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=local
     network_mode: host
 #    ports:
 #      - "8080:8080"

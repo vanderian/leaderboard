@@ -10,14 +10,16 @@ COPY src/. .
 WORKDIR /app/src/Silo
 RUN dotnet publish -c Release -o out
 
-FROM build AS testrunner
-WORKDIR /app/tests
-COPY tests/. .
-WORKDIR /app/tests/Grains.Tests
-RUN dotnet build
-ENTRYPOINT ["dotnet", "test", "--logger:trx"]
+#FROM build AS testrunner
+#WORKDIR /app/tests
+#COPY tests/. .
+#WORKDIR /app/tests/Grains.Tests
+#RUN dotnet build
+#ENTRYPOINT ["dotnet", "test", "--logger:trx"]
 
 FROM mcr.microsoft.com/dotnet/core/runtime:3.0 AS runtime
+ARG ASPNETCORE_ENVIRONMENT
+ENV ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
 WORKDIR /app
 COPY --from=build /app/src/Silo/out ./
 ENTRYPOINT ["dotnet", "Silo.dll"]

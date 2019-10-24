@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Net;
 using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
+using Common;
 using Grains;
 using Microsoft.Extensions.Logging;
 using Orleans;
@@ -15,22 +15,22 @@ namespace Silo
     {
         private static ISiloHost _silo;
         private static readonly ManualResetEvent SiloStopped = new ManualResetEvent(false);
+        private static readonly Bootstrap Bootstrap = AppConfigurator.BootstrapApp();
 
         public static void Main(string[] args)
         {
             _silo = new SiloHostBuilder()
                 .UseDashboard()
-                .UseLocalhostClustering()
                 .AddMemoryGrainStorageAsDefault()
                 .Configure<ClusterOptions>(options =>
                 {
                     options.ClusterId = "dev";
                     options.ServiceId = "LeaderBoardApp";
                 })
-                .Configure<EndpointOptions>(options => options.AdvertisedIPAddress = IPAddress.Loopback)
                 .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(LeaderBoardGrain).Assembly).WithReferences())
                 .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(PlayerGrain).Assembly).WithReferences())
                 .ConfigureLogging(logging => logging.AddConsole())
+                .ConfigureCluster(Bootstrap)
                 .Build();
 
             Task.Run(StartSilo);
@@ -47,7 +47,7 @@ namespace Silo
         private static async Task StartSilo()
         {
             await _silo.StartAsync();
-            Console.WriteLine("Silo started");
+            Console.WriteLine($"Silo started on {Bootstrap.HostingEnvironment.EnvironmentName} env");
         }
 
         private static async Task StopSilo()

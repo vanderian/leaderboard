@@ -4,7 +4,7 @@ using Orleans;
 
 namespace Grains.Interfaces
 {
-    public interface ILeaderBoard : IGrainWithGuidKey
+    public interface ILeaderBoard : IGrainWithGuidKey, IGrainMarker
     {
         Task<LeaderBoardRank> GetPlayerScore(IPlayer player);
         Task<LeaderBoardRank> AddPlayerScore(IPlayer player, int score);

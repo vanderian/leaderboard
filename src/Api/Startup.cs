@@ -1,13 +1,15 @@
 using System;
 using System.Threading.Tasks;
+using Common.Config;
 using Grains.Interfaces;
-using Grpc.Net.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Runtime;
@@ -16,11 +18,24 @@ namespace Api
 {
     public class Startup
     {
+        private readonly IConfiguration _cfg;
+
+        public Startup(IConfiguration cfg)
+        {
+            _cfg = cfg;
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            var client = CreateClusterClient(services.BuildServiceProvider());
             services.AddGrpc();
-            services.AddSingleton(client);
+            services.Configure<OrleansConfig>(_cfg.GetSection(nameof(OrleansConfig)));
+
+//            connect immediately
+//            var client = CreateClusterClient(services.BuildServiceProvider());
+//            services.AddSingleton(client);
+
+//            connect lazy
+            services.AddSingleton(CreateClusterClient);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -43,17 +58,19 @@ namespace Api
         private IClusterClient CreateClusterClient(IServiceProvider serviceProvider)
         {
             var log = serviceProvider.GetService<ILogger<Startup>>();
+            var cfg = serviceProvider.GetService<IOptions<OrleansConfig>>().Value;
+            var env = serviceProvider.GetService<IHostEnvironment>();
+
             var count = 0;
 
             var client = new ClientBuilder()
-                .UseLocalhostClustering()
+                .ConfigureCluster(env)
                 .Configure<ClusterOptions>(options =>
                 {
                     options.ClusterId = "dev";
                     options.ServiceId = "LeaderBoardApp";
                 })
-                .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(IPlayer).Assembly))
-                .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(ILeaderBoard).Assembly))
+                .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(IGrainMarker).Assembly).WithReferences())
                 .ConfigureLogging(logging => logging.AddConsole())
                 .Build();
 

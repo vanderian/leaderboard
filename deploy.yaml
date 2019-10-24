@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: pong-api
+  name: pong-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: pong-api
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        run: pong-api
+    spec:
+      containers:
+        - image: orleans-api-image # image name updated by Makefile
+          name: pong-api
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: pong-api
+  name: pong-api
+spec:
+  ports:
+    - port: 5000
+      protocol: TCP
+      targetPort: 80
+  selector:
+    run: pong-api
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: leaderboard-silo
+  name: leaderboard-silo
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  replicas: 2
+  selector:
+    matchLabels:
+      run: leaderboard-silo
+  template:
+    metadata:
+      labels:
+        run: leaderboard-silo
+    spec:
+      containers:
+        - image: orleans-silo-image # image name updated by Makefile
+          name: leaderboard-silo
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: leaderboard-silo
+  name: leaderboard-silo
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    run: leaderboard-silo
+  type: LoadBalancer
