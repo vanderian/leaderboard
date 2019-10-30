@@ -6,7 +6,6 @@ using Common;
 using Grains;
 using Microsoft.Extensions.Logging;
 using Orleans;
-using Orleans.Configuration;
 using Orleans.Hosting;
 
 namespace Silo
@@ -21,16 +20,10 @@ namespace Silo
         {
             _silo = new SiloHostBuilder()
                 .UseDashboard()
-                .AddMemoryGrainStorageAsDefault()
-                .Configure<ClusterOptions>(options =>
-                {
-                    options.ClusterId = "dev";
-                    options.ServiceId = "LeaderBoardApp";
-                })
                 .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(LeaderBoardGrain).Assembly).WithReferences())
                 .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(PlayerGrain).Assembly).WithReferences())
                 .ConfigureLogging(logging => logging.AddConsole())
-                .ConfigureCluster(Bootstrap)
+                .ConfigureSilo(Bootstrap)
                 .Build();
 
             Task.Run(StartSilo);

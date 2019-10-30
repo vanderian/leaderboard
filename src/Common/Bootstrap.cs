@@ -19,12 +19,6 @@ namespace Common
             Configuration = configurationBuilder.Build();
         }
 
-        public void ConfigureServices(IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddOptions();
-            serviceCollection.Configure<OrleansConfig>(Configuration);
-        }
-
         public T GetConfig<T>()
         {
             return Configuration.GetSection(nameof(T)).Get<T>();

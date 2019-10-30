@@ -1,11 +1,16 @@
 using System;
 using System.Linq;
 using Common;
+using Common.Config;
 using Grains.Interfaces.Models;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Orleans;
 using Orleans.Clustering.Kubernetes;
+using Orleans.Configuration;
+using Orleans.Hosting;
 
 namespace Api
 {
@@ -16,11 +21,32 @@ namespace Api
             return builder.ConfigureAppConfiguration((ctx, cfg) => cfg.AddCommonConfigJson(ctx.HostingEnvironment));
         }
 
-        public static IClientBuilder ConfigureCluster(this IClientBuilder builder, IHostEnvironment env)
+        public static IClientBuilder ConfigureCluster(this IClientBuilder builder, IServiceProvider serviceProvider)
         {
+            var env = serviceProvider.GetService<IHostEnvironment>();
+            var keys = serviceProvider.GetService<IOptions<AwsKeys>>().Value;
+            var cfg = serviceProvider.GetService<IOptions<OrleansConfig>>().Value;
+
+            builder.Configure<ClusterOptions>(options =>
+            {
+                options.ClusterId = cfg.ClusterId;
+                options.ServiceId = cfg.ServiceId;
+            });
+
             if (env.IsLocal())
             {
                 builder.UseLocalhostClustering();
+            }
+
+            if (env.IsAws())
+            {
+                builder.UseDynamoDBClustering(options =>
+                {
+                    options.AccessKey = keys.ApiKey;
+                    options.SecretKey = keys.ApiSecret;
+                    options.Service = "eu-central-1";
+                    options.TableName = cfg.ServiceId;
+                });
             }
 
             if (env.IsK8())

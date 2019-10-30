@@ -7,7 +7,9 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.0.0" />
-        <PackageReference Include="Microsoft.Orleans.Server" Version="2.4.2" />
+        <PackageReference Include="Microsoft.Orleans.Clustering.DynamoDB" Version="2.4.3" />
+        <PackageReference Include="Microsoft.Orleans.Persistence.DynamoDB" Version="2.4.3" />
+        <PackageReference Include="Microsoft.Orleans.Server" Version="2.4.3" />
         <PackageReference Include="Orleans.Clustering.Kubernetes" Version="1.1.1" />
         <PackageReference Include="OrleansDashboard" Version="2.4.5" />
     </ItemGroup>

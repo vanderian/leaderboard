@@ -2,7 +2,7 @@ namespace Common.Config
 {
     public class OrleansConfig
     {
-        public string Foo { get; set; }
-        public string Bar { get; set; }
+        public string ClusterId { get; set; }
+        public string ServiceId { get; set; }
     }
 }

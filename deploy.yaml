@@ -66,6 +66,17 @@ spec:
         - image: orleans-silo-image # image name updated by Makefile
           name: leaderboard-silo
           imagePullPolicy: Always
+          env:
+            - name: AWSKEYS__APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-dyndb
+                  key: key
+            - name: AWSKEYS__APISECRET
+              valueFrom:
+                secretKeyRef:
+                  name: aws-dyndb
+                  key: secret
           resources:
             limits:
               memory: "256Mi"

@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using Common;
 using Common.Config;
 using Microsoft.Extensions.Configuration;
@@ -11,22 +10,63 @@ namespace Silo
 {
     public static class Extensions
     {
-        public static ISiloHostBuilder ConfigureCluster(this ISiloHostBuilder builder, Bootstrap bootstrap)
+        public static ISiloHostBuilder ConfigureSilo(this ISiloHostBuilder builder, Bootstrap bootstrap)
         {
             var cfg = bootstrap.Configuration.GetSection(nameof(OrleansConfig)).Get<OrleansConfig>();
+            var keys = bootstrap.Configuration.GetSection(nameof(AwsKeys)).Get<AwsKeys>();
 
             if (!bootstrap.HostingEnvironment.IsValid())
                 throw new ArgumentException($"ERROR: ASPNETCORE_ENVIRONMENT set to unknown value: {bootstrap.HostingEnvironment.EnvironmentName}");
 
+            builder
+                .Configure<ClusterOptions>(options =>
+                {
+                    options.ClusterId = cfg.ClusterId;
+                    options.ServiceId = cfg.ServiceId;
+                });
+
             if (bootstrap.HostingEnvironment.IsLocal())
             {
-                builder.UseLocalhostClustering()
-                    .Configure<EndpointOptions>(options => options.AdvertisedIPAddress = IPAddress.Loopback);
+                builder
+                    .UseLocalhostClustering()
+                    .AddMemoryGrainStorageAsDefault();
+            }
+
+            if (bootstrap.HostingEnvironment.IsAws())
+            {
+                builder
+                    .UseDynamoDBClustering(options =>
+                    {
+                        options.AccessKey = keys.ApiKey;
+                        options.SecretKey = keys.ApiSecret;
+                        options.Service = "us-east-2";
+                        options.TableName = cfg.ServiceId;
+                    })
+                    .ConfigureEndpoints(new Random(1).Next(10001, 10100), new Random(1).Next(20001, 20100))
+                    .AddDynamoDBGrainStorageAsDefault(options =>
+                        {
+                            options.UseJson = true;
+                            options.AccessKey = keys.ApiKey;
+                            options.SecretKey = keys.ApiSecret;
+                            options.Service = "us-east-2";
+                            options.TableName = $"{cfg.ServiceId}_{cfg.ClusterId}_GrainState";
+                        }
+                    );
             }
 
             if (bootstrap.HostingEnvironment.IsK8())
             {
-                builder.UseKubeMembership(options => { options.CanCreateResources = true; })
+                builder
+                    .AddDynamoDBGrainStorageAsDefault(options =>
+                        {
+                            options.UseJson = true;
+                            options.AccessKey = keys.ApiKey;
+                            options.SecretKey = keys.ApiSecret;
+                            options.Service = "us-east-2";
+                            options.TableName = $"{cfg.ServiceId}_{cfg.ClusterId}_GrainState";
+                        }
+                    )
+                    .UseKubeMembership(options => { options.CanCreateResources = true; })
                     .ConfigureEndpoints(new Random(1).Next(10001, 10100), new Random(1).Next(20001, 20100));
             }
 

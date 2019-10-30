@@ -29,6 +29,7 @@ namespace Api
         {
             services.AddGrpc();
             services.Configure<OrleansConfig>(_cfg.GetSection(nameof(OrleansConfig)));
+            services.Configure<AwsKeys>(_cfg.GetSection(nameof(AwsKeys)));
 
 //            connect immediately
 //            var client = CreateClusterClient(services.BuildServiceProvider());
@@ -58,18 +59,10 @@ namespace Api
         private IClusterClient CreateClusterClient(IServiceProvider serviceProvider)
         {
             var log = serviceProvider.GetService<ILogger<Startup>>();
-            var cfg = serviceProvider.GetService<IOptions<OrleansConfig>>().Value;
-            var env = serviceProvider.GetService<IHostEnvironment>();
-
             var count = 0;
 
             var client = new ClientBuilder()
-                .ConfigureCluster(env)
-                .Configure<ClusterOptions>(options =>
-                {
-                    options.ClusterId = "dev";
-                    options.ServiceId = "LeaderBoardApp";
-                })
+                .ConfigureCluster(serviceProvider)
                 .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(IGrainMarker).Assembly).WithReferences())
                 .ConfigureLogging(logging => logging.AddConsole())
                 .Build();
